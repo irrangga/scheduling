@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	device_handler "iot/internal/handler/rest/device"
+	sensor_handler "iot/internal/handler/rest/sensor"
 	device_repo "iot/internal/repo/device"
+	sensor_repo "iot/internal/repo/sensor"
 	device_uc "iot/internal/usecase/device"
+	sensor_uc "iot/internal/usecase/sensor"
 	"log"
 	"net/http"
 	"os"
@@ -57,12 +60,15 @@ func main() {
 
 	// REPO INITIALIZATION
 	deviceRepo := device_repo.New(gormDB)
+	sensorRepo := sensor_repo.New(gormDB)
 
 	// USECASE INITIALIZATION
 	deviceUsecase := device_uc.New(deviceRepo)
+	sensorUsecase := sensor_uc.New(sensorRepo)
 
 	// HANDLER INITIALIZATION
 	deviceHandler := device_handler.New(deviceUsecase)
+	sensorHandler := sensor_handler.New(sensorUsecase)
 
 	// SETUP ROUTER
 	router := gin.Default()
@@ -78,6 +84,12 @@ func main() {
 	router.POST("/devices", deviceHandler.CreateDevice)
 	router.PUT("/devices/:id", deviceHandler.UpdateDevice)
 	router.DELETE("/devices/:id", deviceHandler.DeleteDevice)
+
+	router.GET("/sensors", sensorHandler.GetListSensors)
+	router.GET("/sensors/:id", sensorHandler.GetSensor)
+	router.POST("/sensors", sensorHandler.CreateSensor)
+	router.PUT("/sensors/:id", sensorHandler.UpdateSensor)
+	router.DELETE("/sensors/:id", sensorHandler.DeleteSensor)
 
 	serverPort := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
 	log.Printf("server listening at %s", serverPort)
